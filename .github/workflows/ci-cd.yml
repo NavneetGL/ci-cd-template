@@ -1,0 +1,60 @@
+name: CI-CD-Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      run : echo "java"
+
+    - name: Build with Maven
+      run: echo "Maven Build completed"
+      
+    - name: SonarQube Scan
+      run: echo "SonarSource"
+      
+    - name: Snyk Scan
+      run: echo "snyk"
+     
+    - name: Upload to Artifactory
+      run: echo "mvn deploy"
+
+    - name: Deployement to EKS Cluster(Via AgroCD)
+      run: echo "Deployement to EKS"
+ 
+    - name: Deploy to QA
+      run: echo " Deploy to QA"
+
+    - name: Run QA Test Suite
+      run: echo "QA test"
+
+    - name: DAST scan via Rapid7
+      run: echo "Dast Scan"
+  
+    - name: Deploy to STG
+      run: echo " Deploy to STG"
+
+    - name: Automated UAT
+      run: echo " Automated UAT"
+      
+    - name: Await Manual Merge Approval
+      run: echo "Waiting for approval to tag production..."
+        
+    - name: Tag PRD Release
+      run: echo "PRD Release"
+
+    - name: Deploy to Production
+      run: echo " Deploy to Production"
+
+    - name: Post-PRD Smoke Test
+      run: echo " Post -PRD smoke test"
