@@ -7,54 +7,113 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  checkout:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
+  setup-java:
+    runs-on: ubuntu-latest
+    needs: checkout
+    steps:
     - name: Set up Java
-      run : echo "java"
+      run: echo "java"
 
+  build-maven:
+    runs-on: ubuntu-latest
+    needs: setup-java
+    steps:
     - name: Build with Maven
       run: echo "Maven Build completed"
-      
+
+  sonar-scan:
+    runs-on: ubuntu-latest
+    needs: build-maven
+    steps:
     - name: SonarQube Scan
       run: echo "SonarSource"
-      
+
+  snyk-scan:
+    runs-on: ubuntu-latest
+    needs: sonar-scan
+    steps:
     - name: Snyk Scan
       run: echo "snyk"
-     
+
+  upload-artifactory:
+    runs-on: ubuntu-latest
+    needs: snyk-scan
+    steps:
     - name: Upload to Artifactory
       run: echo "mvn deploy"
 
-    - name: Deployement to EKS Cluster(Via AgroCD)
-      run: echo "Deployement to EKS"
- 
-    - name: Deploy to QA
-      run: echo " Deploy to QA"
+  deploy-eks:
+    runs-on: ubuntu-latest
+    needs: upload-artifactory
+    steps:
+    - name: Deploy to EKS Cluster (Via ArgoCD)
+      run: echo "Deployment to EKS"
 
+  deploy-qa:
+    runs-on: ubuntu-latest
+    needs: deploy-eks
+    steps:
+    - name: Deploy to QA
+      run: echo "Deploy to QA"
+
+  qa-test:
+    runs-on: ubuntu-latest
+    needs: deploy-qa
+    steps:
     - name: Run QA Test Suite
       run: echo "QA test"
 
+  dast-scan:
+    runs-on: ubuntu-latest
+    needs: qa-test
+    steps:
     - name: DAST scan via Rapid7
-      run: echo "Dast Scan"
-  
-    - name: Deploy to STG
-      run: echo " Deploy to STG"
+      run: echo "DAST Scan"
 
+  deploy-stg:
+    runs-on: ubuntu-latest
+    needs: dast-scan
+    steps:
+    - name: Deploy to STG
+      run: echo "Deploy to STG"
+
+  uat:
+    runs-on: ubuntu-latest
+    needs: deploy-stg
+    steps:
     - name: Automated UAT
-      run: echo " Automated UAT"
-      
+      run: echo "Automated UAT"
+
+  approval:
+    runs-on: ubuntu-latest
+    needs: uat
+    steps:
     - name: Await Manual Merge Approval
       run: echo "Waiting for approval to tag production..."
-        
+
+  tag-prd:
+    runs-on: ubuntu-latest
+    needs: approval
+    steps:
     - name: Tag PRD Release
       run: echo "PRD Release"
 
+  deploy-prd:
+    runs-on: ubuntu-latest
+    needs: tag-prd
+    steps:
     - name: Deploy to Production
-      run: echo " Deploy to Production"
+      run: echo "Deploy to Production"
 
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: deploy-prd
+    steps:
     - name: Post-PRD Smoke Test
-      run: echo " Post -PRD smoke test"
+      run: echo "Post-PRD smoke test"
