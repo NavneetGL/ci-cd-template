@@ -1,0 +1,58 @@
+name: PROD-Deployment-Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      rollback_version:
+        description: "Docker image tag to rollback to"
+        required: true
+
+jobs:
+  prod-deployment:
+    name: Deploy to PROD
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Pull image from JFrog
+        run: echo "Pulling image from JFrog..."
+
+      - name: QA/Test Deployment
+        run: echo "Running QA/Test deployment..."
+
+      - name: DAST Scanning (Rapid7 InsightAppSec)
+        run: echo "Triggering DAST Scan via Rapid7..."
+
+      - name: Deploy to Production Cluster
+        run: echo "Deploying to PROD Cluster..."
+
+      - name: Post-Deployment Smoke Test
+        run: echo "Running post-deployment health check..."
+
+      - name: Notify Success
+        run: echo "PROD Deployment Successful"
+
+      - name: Tag the Release
+        run: echo "tag the release version"
+
+  rollback:
+    name: Rollback Deployment
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Rollback to Previous Version
+        run: echo "Rolling back to version ${{ github.event.inputs.rollback_version }}..."
+
+      - name: Notify Rollback
+        run: echo "Rollback to ${{ github.event.inputs.rollback_version }} completed!"
