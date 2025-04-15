@@ -1,0 +1,28 @@
+name: ci-cd.stg
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  stg-deployment:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, 'stg')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Pull artifact from JFrog
+        run: echo "Pulling image from JFrog..."
+
+      - name: QA/Test Deployment
+        run: echo "Running QA/Test deployment..."
+
+      - name: DAST Scanning (Rapid7 InsightAppSec)
+        run: echo "Triggering DAST Scan via Rapid7..."
+
+      - name: Deploy to STG Cluster
+        run: echo "Deploying to STG Cluster..."
+
+      - name: Notify Success
+        run: echo "STG Deployment Successful!"
